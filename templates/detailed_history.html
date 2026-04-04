@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireSense AI — Analysis #{{ analysis.id }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .topnav { display: none !important; }
+        .content-body { height: 100%; overflow-y: auto; padding: 32px 48px; display: block; }
+        
+        .dh-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .dh-header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; display: flex; align-items: center; gap: 12px; }
+        .dh-header p { font-size: 13px; color: var(--text-secondary); }
+        .dh-back-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+        .dh-back-link:hover { color: var(--text-primary); }
+
+        .dh-grid { display: grid; gap: 24px; }
+        .dh-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; }
+        
+        .dh-score-banner { display: flex; align-items: center; gap: 24px; }
+        .dh-score { 
+            width: 80px; height: 80px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: 700; font-family: 'Roboto Mono', monospace;
+            border: 4px solid var(--border-bright); flex-shrink: 0;
+        }
+        .score-high { border-color: var(--green); color: var(--green); }
+        .score-med  { border-color: #eab308; color: #eab308; }
+        .score-low  { border-color: var(--red); color: var(--red); }
+        
+        .dh-score-info h2 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        .dh-score-info p { font-size: 13px; color: var(--text-secondary); }
+        .dh-score-info strong { color: var(--text-primary); font-family: 'Roboto Mono', monospace; font-size: 14px; }
+        
+        .dh-role-badge { font-family: 'Roboto Mono', monospace; font-size: 11px; padding: 2px 8px; border-radius: 4px; background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid rgba(59, 130, 246, 0.2); }
+
+        .dh-section-title { font-size: 11px; font-weight: 700; font-family: 'Roboto Mono', monospace; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 16px; }
+
+        .dh-ats-list { display: flex; flex-direction: column; gap: 12px; }
+        .dh-ats-item { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; line-height: 1.5; padding: 12px; background: var(--bg-panel); border-radius: 6px; border: 1px solid var(--border); }
+        .dh-ats-item svg { flex-shrink: 0; margin-top: 2px; }
+        .dh-ats-item strong { color: var(--text-primary); margin-right: 4px; }
+
+        .dh-split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        
+        .dh-skills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .dh-skill-tag { font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 4px; }
+        .dh-skill-match { background: rgba(16, 185, 129, 0.05); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .dh-skill-gap { background: rgba(239, 68, 68, 0.05); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        .dh-list { list-style: none; padding: 0; margin: 0; }
+        .dh-list li { position: relative; padding-left: 16px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
+        .dh-list li::before { content: ''; position: absolute; left: 0; top: 8px; width: 4px; height: 4px; border-radius: 50%; background: var(--border-bright); }
+
+        .dh-collapsible { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+        .dh-collapsible summary { padding: 16px 20px; font-size: 13px; font-weight: 600; color: var(--text-primary); cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+        .dh-collapsible summary::-webkit-details-marker { display: none; }
+        .dh-collapsible summary::after { content: '+'; font-size: 16px; font-family: 'Roboto Mono', monospace; color: var(--text-muted); }
+        .dh-collapsible[open] summary::after { content: '−'; }
+        .dh-collapsible-content { padding: 0 20px 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 16px; font-family: 'Roboto Mono', monospace; }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-name" style="font-size:15px; letter-spacing:-0.01em;">HireSense <span style="color:var(--accent)">AI</span></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/" class="nav-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Dashboard
+            </a>
+            <a href="/history" class="nav-item active">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+                Archive
+            </a>
+        </nav>
+
+        <a href="/" class="btn-new-analysis" style="text-decoration:none; text-align:center; display:flex; justify-content:center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Analysis
+        </a>
+
+        <div class="sidebar-footer">
+            {% if current_user.is_authenticated %}
+                <div style="padding: 10px 14px; display:flex; align-items:center; gap:9px; border-top: 1px solid var(--border);">
+                    {% if current_user.avatar_url %}
+                        <img src="{{ current_user.avatar_url }}" alt="avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;">
+                    {% else %}
+                        <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">{{ current_user.initials }}</div>
+                    {% endif %}
+                    <div style="overflow:hidden;">
+                        <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);">{{ current_user.display_name }}</div>
+                        <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ current_user.email }}</div>
+                    </div>
+                </div>
+                <a href="/logout" class="nav-item" style="color:var(--red);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Log Out
+                </a>
+            {% else %}
+                <a href="/login" class="nav-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    Log In
+                </a>
+                <a href="/signup" class="nav-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    Sign Up
+                </a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <div class="main-area">
+        <div class="content-body" style="max-width: 1000px; margin: 0 auto;">
+            
+            <div class="dh-header">
+                <div>
+                    <h1>
+                        Analysis #{{ analysis.id }}
+                        {% if analysis.target_role %}
+                        <span class="dh-role-badge">{{ analysis.target_role }}</span>
+                        {% endif %}
+                    </h1>
+                    <p>Analyzed on {{ analysis.created_at }}</p>
+                </div>
+                <a href="/history" class="dh-back-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Return to Archive
+                </a>
+            </div>
+
+            <div class="dh-grid">
+
+                <!-- Score Card -->
+                <div class="dh-card dh-score-banner">
+                    <div class="dh-score {% if analysis.score >= 75 %}score-high{% elif analysis.score >= 40 %}score-med{% else %}score-low{% endif %}">
+                        {{ analysis.score }}<span style="font-size:14px">%</span>
+                    </div>
+                    <div class="dh-score-info">
+                        <h2>Overall Fit Verdict</h2>
+                        <p>
+                            Keyword Match: <strong>{{ analysis.keyword_score }}%</strong> &nbsp;&middot;&nbsp; 
+                            AI Evaluation: <strong>{{ analysis.ai_score if analysis.ai_score else 'N/A' }}%</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ATS Checks -->
+                {% if analysis.ats_issues %}
+                <div class="dh-card">
+                    <div class="dh-section-title">ATS Readiness & Formatting</div>
+                    <div class="dh-ats-list">
+                        {% for issue in analysis.ats_issues %}
+                            <div class="dh-ats-item">
+                                {% if issue.passed %}
+                                    <svg width="18" height="18" fill="var(--green)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                {% else %}
+                                    <svg width="18" height="18" fill="var(--red)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ issue.name }}:</strong> 
+                                    <span style="color:var(--text-secondary)">{{ issue.message }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Skills Row -->
+                <div class="dh-split-row">
+                    <div class="dh-card">
+                        <div class="dh-section-title">Present Skills</div>
+                        <div class="dh-skills">
+                            {% for skill in analysis.present_skills %}
+                                <span class="dh-skill-tag dh-skill-match">{{ skill }}</span>
+                            {% else %}
+                                <span style="font-size:13px; color:var(--text-muted); font-style:italic;">No target skills identified.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="dh-card">
+                        <div class="dh-section-title">Skill Gaps (Missing)</div>
+                        <div class="dh-skills">
+                            {% for skill in analysis.missing_skills %}
+                                <span class="dh-skill-tag dh-skill-gap">{{ skill }}</span>
+                            {% else %}
+                                <span style="font-size:13px; color:var(--text-muted); font-style:italic;">No skill gaps identified.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Row -->
+                <div class="dh-split-row">
+                    <div class="dh-card">
+                        <div class="dh-section-title">Actionable Suggestions</div>
+                        <ul class="dh-list">
+                            {% for s in analysis.suggestions %}
+                                <li>{{ s }}</li>
+                            {% else %}
+                                <li style="color:var(--text-muted); font-style:italic;">No suggestions available.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="dh-card">
+                        <div class="dh-section-title">Identified Strengths</div>
+                        <ul class="dh-list">
+                            {% for s in analysis.strengths %}
+                                <li>{{ s }}</li>
+                            {% else %}
+                                <li style="color:var(--text-muted); font-style:italic;">No specific strengths identified.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="height: 16px;"></div>
+
+                <!-- Source Data -->
+                <details class="dh-collapsible">
+                    <summary>Source Data: Target Job Description</summary>
+                    <div class="dh-collapsible-content">{{ analysis.job_desc }}</div>
+                </details>
+
+                <details class="dh-collapsible">
+                    <summary>Source Data: Candidate Resume Extract</summary>
+                    <div class="dh-collapsible-content">{{ analysis.resume }}</div>
+                </details>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<script src="/static/js/main.js"></script>
+</body>
+</html>

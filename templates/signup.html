@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireSense AI — Sign Up</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: auto; }
+        .auth-wrap {
+            display: flex; width: 100%; max-width: 900px; min-height: 560px;
+            border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5); margin: 2rem;
+        }
+        .auth-left {
+            flex: 1; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            padding: 48px 40px; display: flex; flex-direction: column;
+            justify-content: space-between; border-right: 1px solid var(--border);
+        }
+        .auth-left-brand { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+        .auth-left-brand span { color: var(--accent); }
+        .auth-left-tagline { font-size: 28px; font-weight: 700; line-height: 1.3; color: var(--text-primary); letter-spacing: -0.02em; }
+        .auth-left-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-top: 10px; }
+        .auth-perks { list-style: none; margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .auth-perks li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+        .auth-perks li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+        .auth-left-footer { font-size: 11px; color: var(--text-muted); font-family: 'Roboto Mono', monospace; letter-spacing: 0.04em; }
+        .auth-right {
+            flex: 1; background: var(--bg-panel); padding: 48px 40px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .auth-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+        .auth-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+        .auth-sub a { color: var(--accent); text-decoration: none; }
+        .auth-sub a:hover { text-decoration: underline; }
+        .auth-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .auth-field { margin-bottom: 14px; }
+        .auth-field label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-family: 'Roboto Mono', monospace; margin-bottom: 8px; }
+        .auth-field input {
+            width: 100%; background: var(--bg-card); border: 1px solid var(--border-bright);
+            border-radius: 6px; color: var(--text-primary); font-family: inherit;
+            font-size: 13px; padding: 10px 14px; outline: none; transition: border-color 0.15s;
+        }
+        .auth-field input:focus { border-color: var(--accent); }
+        .auth-field input::placeholder { color: var(--text-muted); }
+        .auth-btn {
+            width: 100%; padding: 12px; background: var(--accent); color: #fff;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+            font-family: 'Roboto Mono', monospace; border: none; border-radius: 6px;
+            cursor: pointer; transition: background 0.15s; margin-top: 4px;
+        }
+        .auth-btn:hover { background: var(--accent-hover); }
+        .auth-btn-google {
+            width: 100%; padding: 11px 14px; background: var(--bg-card);
+            color: var(--text-primary); font-size: 13px; font-weight: 500;
+            border: 1px solid var(--border-bright); border-radius: 6px;
+            cursor: pointer; transition: border-color 0.15s, background 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            text-decoration: none;
+        }
+        .auth-btn-google:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+        .auth-divider { text-align: center; font-size: 11px; color: var(--text-muted); margin: 14px 0; position: relative; }
+        .auth-divider::before, .auth-divider::after {
+            content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--border);
+        }
+        .auth-divider::before { left: 0; } .auth-divider::after { right: 0; }
+        .auth-terms { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px; line-height: 1.5; }
+        .auth-terms a { color: var(--text-secondary); }
+        .flash { padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; border: 1px solid; }
+        .flash.error   { background: var(--red-dim);   border-color: var(--red-border);   color: var(--red); }
+        .flash.success { background: var(--green-dim); border-color: var(--green-border); color: var(--green); }
+    </style>
+</head>
+<body>
+<div class="auth-wrap">
+    <div class="auth-left">
+        <div class="auth-left-brand">HireSense <span>AI</span></div>
+        <div>
+            <div class="auth-left-tagline">Start hiring<br>smarter today.</div>
+            <div class="auth-left-sub">Join recruiters who use AI to cut screening time and surface the best candidates automatically.</div>
+            <ul class="auth-perks">
+                <li>Instant AI-powered resume scoring</li>
+                <li>Skill gap analysis in seconds</li>
+                <li>Strategic candidate recommendations</li>
+                <li>Full analysis history &amp; archive</li>
+            </ul>
+        </div>
+        <div class="auth-left-footer">FREE TO GET STARTED &nbsp;·&nbsp; NO CARD REQUIRED</div>
+    </div>
+
+    <div class="auth-right">
+        <div class="auth-title">Create your account</div>
+        <div class="auth-sub">Already have an account? <a href="/login">Log in</a></div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <!-- Google OAuth button -->
+        <a href="/auth/google" class="auth-btn-google">
+            <svg width="18" height="18" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Sign up with Google
+        </a>
+
+        <div class="auth-divider">or sign up with email</div>
+
+        <form method="POST" action="/signup">
+            <div class="auth-row">
+                <div class="auth-field">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" placeholder="Jane" required>
+                </div>
+                <div class="auth-field">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" placeholder="Smith" required>
+                </div>
+            </div>
+            <div class="auth-field">
+                <label for="email">Work Email</label>
+                <input type="email" id="email" name="email" placeholder="jane@company.com" required>
+            </div>
+            <div class="auth-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Min. 8 characters" required minlength="8">
+            </div>
+            <button type="submit" class="auth-btn">Create Account →</button>
+            <div class="auth-terms">
+                By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
