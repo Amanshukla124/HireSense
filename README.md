@@ -6,14 +6,11 @@ HireSense is an advanced, AI-driven web platform designed to analyze, score, and
 
 ## 📸 Screenshots
 
-*(Replace these placeholder images by dropping your actual screenshots into the `assets` folder and updating the links below, or matching the filenames!)*
-
 ### Dashboard / Resume Analyzer
 ![Dashboard / Analyzer Placeholder](assets/dashboard.png)
 
-### Tailoring & History View
-![History & Tailoring Placeholder](assets/history.png)
-
+### User Authentication / Login
+![Login & Registration](assets/login.png)
 ---
 
 ## ✨ Features
