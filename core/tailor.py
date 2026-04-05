@@ -52,7 +52,6 @@ Format requirement:
                 headers=headers,
                 json={
                     "model": model,
-                    "response_format": {"type": "json_object"},
                     "messages": [
                         {"role": "system", "content": "You are a specialized AI designed to output only valid JSON. Do not include markdown wraps like ```json."},
                         {"role": "user", "content": prompt}
