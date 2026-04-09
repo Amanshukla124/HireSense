@@ -9,8 +9,12 @@ from core.user import User
 from core.tailor import generate_tailored_resumes
 from core.cover_letter import generate_cover_letter
 from core.pdf_gen import generate_pdf_bytes
+from werkzeug.middleware.proxy_fix import ProxyFix
+import os
 
 app = Flask(__name__)
+if os.environ.get('VERCEL'):
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.config.from_object(Config)
 
 # ── Flask-Login ──────────────────────────────────────────────────────────────
@@ -115,7 +119,10 @@ def logout():
 # ── Google OAuth routes ───────────────────────────────────────────────────────
 @app.route('/auth/google')
 def auth_google():
-    redirect_uri = app.config['GOOGLE_REDIRECT_URI']
+    if os.environ.get('VERCEL'):
+        redirect_uri = url_for('auth_google_callback', _external=True)
+    else:
+        redirect_uri = app.config.get('GOOGLE_REDIRECT_URI')
     return google.authorize_redirect(redirect_uri)
 
 
