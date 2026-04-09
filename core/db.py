@@ -2,7 +2,11 @@ import sqlite3
 import json
 import os
 
-DB_PATH     = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database', 'hiresense.db')
+if os.environ.get("VERCEL"):
+    DB_PATH = '/tmp/hiresense.db'
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database', 'hiresense.db')
+
 SCHEMA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database', 'schema.sql')
 
 def init_db():
@@ -15,10 +19,11 @@ def init_db():
 
         # Graceful column migrations for older databases
         for column, definition in [
-            ("user_id",     "INTEGER"),
-            ("ats_issues",  "TEXT"),
-            ("target_role", "TEXT"),
+            ("user_id",          "INTEGER"),
+            ("ats_issues",       "TEXT"),
+            ("target_role",      "TEXT"),
             ("tailored_resumes", "TEXT"),
+            ("cover_letter",     "TEXT"),
         ]:
             try:
                 conn.execute(f"ALTER TABLE analyses ADD COLUMN {column} {definition}")
@@ -60,6 +65,24 @@ def save_tailored_resumes(analysis_id, options):
         conn.execute("UPDATE analyses SET tailored_resumes = ? WHERE id = ?", (json.dumps(options), analysis_id))
         conn.commit()
 
+def save_cover_letter(analysis_id, cover_letter_text):
+    """Saves a generated cover letter to an existing analysis."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("UPDATE analyses SET cover_letter = ? WHERE id = ?", (cover_letter_text, analysis_id))
+        conn.commit()
+
+def get_cover_letter(analysis_id, user_id):
+    """Retrieves the cover letter for a specific analysis, ensuring user ownership."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT cover_letter FROM analyses WHERE id = ? AND user_id = ?",
+            (analysis_id, user_id)
+        ).fetchone()
+        if not row:
+            return None
+        return row["cover_letter"]
+
 def get_analyses_for_user(user_id):
     """Retrieves all past analyses for a specific user, most recent first."""
     with sqlite3.connect(DB_PATH) as conn:
@@ -100,4 +123,5 @@ def get_analysis_by_id_for_user(analysis_id, user_id):
             "ats_issues": json.loads(row["ats_issues"]) if row["ats_issues"] else [],
             "target_role": row["target_role"] if "target_role" in row.keys() else "",
             "tailored_resumes": json.loads(row["tailored_resumes"]) if "tailored_resumes" in row.keys() and row["tailored_resumes"] else None,
+            "cover_letter": row["cover_letter"] if "cover_letter" in row.keys() else None,
         }

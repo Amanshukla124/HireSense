@@ -59,7 +59,10 @@ document.getElementById('newAnalysisBtn').addEventListener('click', () => {
     document.getElementById('resultsPlaceholder').style.display = 'flex';
     document.getElementById('resultsId').textContent = '— AWAITING INPUT // IDLE';
     document.getElementById('btnTailor').style.display = 'none';
+    document.getElementById('btnCoverLetter').style.display = 'none';
     document.getElementById('tailorSection').style.display = 'none';
+    document.getElementById('coverLetterSection').style.display = 'none';
+    document.getElementById('coverLetterText').textContent = '';
     currentAnalysisId = null;
     resetScore();
 });
@@ -203,6 +206,7 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
         if (data.analysis_id) {
             currentAnalysisId = data.analysis_id;
             document.getElementById('btnTailor').style.display = 'flex';
+            document.getElementById('btnCoverLetter').style.display = 'flex';
         }
         
         const analysisId = 'HS-' + new Date().getFullYear() + '-X' + Math.floor(Math.random()*900+100);
@@ -341,4 +345,102 @@ function copyTailored(elementId) {
             btn.style.color = '';
         }, 2000);
     });
+}
+
+// ── Cover Letter ───────────────────────────────
+async function generateCoverLetter() {
+    if (!currentAnalysisId) return;
+
+    const tone = document.getElementById('coverLetterTone').value;
+    const clSection = document.getElementById('coverLetterSection');
+    const clText = document.getElementById('coverLetterText');
+    const btnCL = document.getElementById('btnCoverLetter');
+    const btnRegen = document.getElementById('btnRegenerateCL');
+
+    // Show section with loading state
+    clSection.style.display = 'block';
+    setTimeout(() => clSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    clText.innerHTML = `<span style="color:var(--text-muted);font-family:'Roboto Mono',monospace;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.5;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        Crafting your cover letter...</span>`;
+
+    // Disable both trigger buttons
+    btnCL.disabled = true;
+    if (btnRegen) btnRegen.disabled = true;
+
+    try {
+        const response = await fetch('/api/cover-letter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysis_id: currentAnalysisId, tone })
+        });
+
+        let result;
+        try {
+            result = await response.json();
+        } catch (_) {
+            throw new Error(`Server returned status ${response.status}`);
+        }
+
+        if (!response.ok || result.error) {
+            clText.innerHTML = `<span style="color:var(--red);font-family:'Roboto Mono',monospace;">${result.error || 'Server error'}</span>`;
+        } else {
+            clText.textContent = result.cover_letter;
+        }
+    } catch (e) {
+        clText.innerHTML = `<span style="color:var(--red);font-family:'Roboto Mono',monospace;">Network Error: ${e.message}</span>`;
+    } finally {
+        btnCL.disabled = false;
+        if (btnRegen) btnRegen.disabled = false;
+    }
+}
+
+function copyCoverLetter() {
+    const text = document.getElementById('coverLetterText').textContent;
+    if (!text.trim()) return;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('btnCopyCL');
+        const original = btn.innerHTML;
+        btn.innerHTML = '✓ Copied!';
+        btn.style.color = 'var(--green)';
+        setTimeout(() => {
+            btn.innerHTML = original;
+            btn.style.color = '';
+        }, 2000);
+    });
+}
+
+document.getElementById('btnCoverLetter').addEventListener('click', generateCoverLetter);
+document.getElementById('btnRegenerateCL').addEventListener('click', generateCoverLetter);
+
+// ── Export PDF ─────────────────────────────────
+async function exportPdf(docType) {
+    if (!currentAnalysisId) return;
+
+    try {
+        const response = await fetch('/api/export-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysis_id: currentAnalysisId, doc_type: docType })
+        });
+
+        if (!response.ok) {
+            const result = await response.json();
+            throw new Error(result.error || 'Failed to export PDF');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `HireSense_${docType}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (e) {
+        alert(`Export Error: ${e.message}`);
+    }
 }

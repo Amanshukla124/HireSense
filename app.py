@@ -1,12 +1,14 @@
-from flask import Flask, render_template, request, jsonify, abort, redirect, url_for, flash, session
+from flask import Flask, render_template, request, jsonify, abort, redirect, url_for, flash, session, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from config import Config
 from core.analyzer import analyze_resume
 from core.parser import extract_text_from_pdf
-from core.db import init_db, save_analysis, get_analyses_for_user, get_analysis_by_id_for_user, save_tailored_resumes
+from core.db import init_db, save_analysis, get_analyses_for_user, get_analysis_by_id_for_user, save_tailored_resumes, save_cover_letter
 from core.user import User
 from core.tailor import generate_tailored_resumes
+from core.cover_letter import generate_cover_letter
+from core.pdf_gen import generate_pdf_bytes
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -214,6 +216,85 @@ def tailor_resume():
         save_tailored_resumes(analysis_id, options)
 
     return jsonify(options)
+
+
+@app.route('/api/cover-letter', methods=['POST'])
+def cover_letter_route():
+    if not current_user.is_authenticated:
+        return jsonify({"error": "You must be logged in to generate a cover letter."}), 401
+
+    data = request.json or {}
+    analysis_id = data.get('analysis_id')
+    tone = data.get('tone', 'professional')  # professional | confident | conversational
+
+    if not analysis_id:
+        return jsonify({"error": "Analysis ID is required."}), 400
+
+    if tone not in ('professional', 'confident', 'conversational'):
+        tone = 'professional'
+
+    analysis = get_analysis_by_id_for_user(analysis_id, current_user.id)
+    if not analysis:
+        return jsonify({"error": "Analysis not found or permission denied."}), 404
+
+    result = generate_cover_letter(
+        analysis['resume'],
+        analysis['job_desc'],
+        app.config['OPENROUTER_API_KEY'],
+        app.config['OPENROUTER_MODEL'],
+        analysis['target_role'],
+        tone=tone,
+    )
+
+    if 'cover_letter' in result:
+        save_cover_letter(analysis_id, result['cover_letter'])
+
+    return jsonify(result)
+
+
+@app.route('/api/export-pdf', methods=['POST'])
+def export_pdf():
+    """Generates and serves a PDF file of the requested document."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "You must be logged in to export PDFs."}), 401
+
+    data = request.json or {}
+    analysis_id = data.get('analysis_id')
+    doc_type = data.get('doc_type', 'conservative') # conservative, aggressive, cover_letter
+
+    if not analysis_id:
+        return jsonify({"error": "Analysis ID is required."}), 400
+
+    analysis = get_analysis_by_id_for_user(analysis_id, current_user.id)
+    if not analysis:
+        return jsonify({"error": "Analysis not found or permission denied."}), 404
+
+    text_content = ""
+    title = "HireSense Document"
+
+    if doc_type in ['conservative', 'aggressive']:
+        if not analysis.get('tailored_resumes'):
+            return jsonify({"error": "Tailored resumes not generated yet."}), 400
+        text_content = analysis['tailored_resumes'].get(doc_type, "")
+        title = f"Tailored Resume - {doc_type.capitalize()}"
+    elif doc_type == 'cover_letter':
+        if not analysis.get('cover_letter'):
+            return jsonify({"error": "Cover letter not generated yet."}), 400
+        text_content = analysis['cover_letter']
+        title = "Tailored Cover Letter"
+
+    if not text_content:
+        return jsonify({"error": "Document content is empty."}), 400
+
+    pdf_stream = generate_pdf_bytes(text_content, title=title)
+    filename = f"HireSense_{doc_type.capitalize()}.pdf"
+
+    return send_file(
+        pdf_stream,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/pdf'
+    )
 
 
 if __name__ == '__main__':
