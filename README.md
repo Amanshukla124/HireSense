@@ -1,6 +1,5 @@
-# HireSense – AI-Powered Resume Analyzer & Tailor
-
-HireSense is an advanced, AI-driven web platform designed to analyze, score, and automatically tailor resumes against job descriptions to maximize ATS (Applicant Tracking System) pass rates. It serves as a premium, intuitive tool for job seekers to optimize their applications.
+HireSense is an AI-powered platform that analyzes, scores, and auto-tailors resumes against job descriptions to maximize ATS success.
+Optimize your job hunt with real-time AI feedback, semantic alignment insights, and one-click tailored PDF exports.
 
 ---
 
